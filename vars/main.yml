@@ -1,5 +1,5 @@
 ---
-nginx:
+local_nginx_dict:
   basedir: "/etc/nginx"
   user: "root"
   group: "root"

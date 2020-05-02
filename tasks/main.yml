@@ -1,31 +1,31 @@
 ---
+- name: Combinaison des dictionnaires odoo
+  set_fact:
+    in_nginx_dict: "{{ in_nginx_dict|default({})|combine({item.key : item.value}, recursive=True) }}"
+  with_dict: "{{ nginx_dict }}"
+  when: nginx_dict is defined
+
 - name: "Install nginx"
   become: yes
   yum:
     name: "nginx"
     state: present
-  tags:
-    - nginx
 
 - name: Debug var
   debug:
-    var: nginx
-  tags:
-    - nginx
+    var: in_nginx_dict
 
 - name: Create directory for configuration files
   become: yes
   file:
      state: directory
      path: "{{ item }}"
-     owner: "{{ nginx['user'] }}"
-     group: "{{ nginx['group'] }}"
+     owner: "{{ in_nginx_dict['user'] }}"
+     group: "{{ in_nginx_dict['group'] }}"
      mode: "0755"
   with_items:
-    - "{{ nginx['basedir'] }}/sites-enabled"
-    - "{{ nginx['basedir'] }}/sites-available"
-  tags:
-    - nginx
+    - "{{ in_nginx_dict['basedir'] }}/sites-enabled"
+    - "{{ in_nginx_dict['basedir'] }}/sites-available"
 
 # SELINUX :
 #ausearch -m avc -ts today | audit2allow
@@ -38,8 +38,6 @@
   selinux_permissive:
     name: httpd_t
     permissive: true
-  tags:
-    - nginx
 
 - name: "Enable service nginx"
   become: yes
@@ -47,6 +45,4 @@
     name: nginx
     state: started
     enabled: yes
-  tags:
-    - nginx
 
