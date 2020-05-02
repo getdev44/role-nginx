@@ -1,0 +1,4 @@
+in_nginx_dict:
+  user: 'nginx'
+  group: 'nginx'
+  basedir: "/etc/nginx"
