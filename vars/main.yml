@@ -1,0 +1,5 @@
+---
+nginx:
+  basedir: "/etc/nginx"
+  user: "root"
+  group: "root"

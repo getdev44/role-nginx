@@ -1,0 +1,52 @@
+---
+- name: "Install nginx"
+  become: yes
+  yum:
+    name: "nginx"
+    state: present
+  tags:
+    - nginx
+
+- name: Debug var
+  debug:
+    var: nginx
+  tags:
+    - nginx
+
+- name: Create directory for configuration files
+  become: yes
+  file:
+     state: directory
+     path: "{{ item }}"
+     owner: "{{ nginx['user'] }}"
+     group: "{{ nginx['group'] }}"
+     mode: "0755"
+  with_items:
+    - "{{ nginx['basedir'] }}/sites-enabled"
+    - "{{ nginx['basedir'] }}/sites-available"
+  tags:
+    - nginx
+
+# SELINUX :
+#ausearch -m avc -ts today | audit2allow
+# POUR voir ce QUI POSE PROBLEME :
+#sudo cat /var/log/audit/audit.log | grep nginx | grep denied | audit2allow -w -a
+#  308  cat /var/log/audit/audit.log | grep nginx | grep denied | audit2allow -M mynginx
+#  311  sudo -i semodule -i mynginx.pp
+- name: Permission SELinux
+  become: yes
+  selinux_permissive:
+    name: httpd_t
+    permissive: true
+  tags:
+    - nginx
+
+- name: "Enable service nginx"
+  become: yes
+  systemd:
+    name: nginx
+    state: started
+    enabled: yes
+  tags:
+    - nginx
+
