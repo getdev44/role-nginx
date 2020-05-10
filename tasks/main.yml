@@ -6,7 +6,6 @@
   when: nginx_dict is defined
 
 - name: "Install nginx"
-  become: yes
   yum:
     name: "nginx"
     state: present
@@ -16,7 +15,6 @@
     var: in_nginx_dict
 
 - name: Create directory for configuration files
-  become: yes
   file:
      state: directory
      path: "{{ item }}"
@@ -26,6 +24,7 @@
   with_items:
     - "{{ in_nginx_dict['basedir'] }}/sites-enabled"
     - "{{ in_nginx_dict['basedir'] }}/sites-available"
+    - "{{ in_nginx_dict['htmldir'] }}/.well-known"
 
 # SELINUX :
 #ausearch -m avc -ts today | audit2allow
@@ -34,13 +33,11 @@
 #  308  cat /var/log/audit/audit.log | grep nginx | grep denied | audit2allow -M mynginx
 #  311  sudo -i semodule -i mynginx.pp
 - name: Permission SELinux
-  become: yes
   selinux_permissive:
     name: httpd_t
     permissive: true
 
 - name: "Enable service nginx"
-  become: yes
   systemd:
     name: nginx
     state: started
